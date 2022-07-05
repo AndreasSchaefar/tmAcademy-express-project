@@ -16,11 +16,43 @@ function getReview(req, res) {
   }
 }
 
+router.use(express.json());
+
 router.get('/', (req, res) => {
   const book = req.book;
   res.json(book.reviews);
 });
 
 router.get('/:reviewId', getReview);
+
+router.post('/', (req, res) => {
+  const book = req.book;
+
+  const newReview = {
+    id: uuid.v4(),
+    comment: req.body.comment,
+  };
+
+  if (!newReview.comment) {
+    return res.status(400).json({ message: 'Please include comment body' });
+  }
+
+  book.reviews.push(newReview);
+  res.json(book.reviews);
+});
+
+router.delete('/:reviewId', (req, res) => {
+  const book = req.book;
+  const id = req.params.reviewId;
+  const index = book.reviews.findIndex((r) => r.id == id);
+  if (index !== -1) {
+    book.reviews.splice(index, 1);
+    res.json(book.reviews);
+  } else {
+    res
+      .status(400)
+      .json({ message: `No existing comment with the id of ${id}.` });
+  }
+});
 
 export { router };
